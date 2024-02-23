@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+#  app1:
+#    build: .
+#    depends_on:
+#      - database
+#    command: uvicorn meu_app:app --host 0.0.0.0 --port 8001
+#    ports:
+#      - "8001:8001"
+  database:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - db_data:/var/dynamodb_local
+
+volumes:
+  db_data:
