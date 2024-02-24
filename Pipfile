@@ -7,7 +7,7 @@ name = "pypi"
 fastapi = "*"
 uvicorn = "*"
 pydantic = "*"
-dynolayer = "==0.3.3"
+dynolayer = "==0.3.4"
 python-dotenv = "*"
 
 [dev-packages]

@@ -1,19 +1,23 @@
+import logging
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from models import Transacao, Cliente
-from schemas import TransacaoSchema
+from app.models import Transacao, Cliente
+from app.schemas import TransacaoSchema
 from dotenv import load_dotenv
 from datetime import datetime
 
 
+logging.getLogger().setLevel(logging.INFO)
 load_dotenv()
 app = FastAPI()
 
 
 @app.post('/clientes/{id}/transacoes')
 async def get_transactions(id: int, body: TransacaoSchema):
-    cliente = Cliente().find_by_id(id)
+    c = Cliente()
+    cliente = c.find_by_id(id)
     if not cliente:
+        logging.info(c.error)
         return JSONResponse(
             {'message': 'O usuario nao existe!'},
             status_code=status.HTTP_404_NOT_FOUND
@@ -30,7 +34,7 @@ async def get_transactions(id: int, body: TransacaoSchema):
 
     if transacao.save() and cliente.save():
         return JSONResponse(
-            None,
+            {'limite': cliente.limite, 'saldo': cliente.saldo},
             status_code=status.HTTP_200_OK
         )
 
@@ -42,8 +46,10 @@ async def get_transactions(id: int, body: TransacaoSchema):
 
 @app.get('/clientes/{id}/extrato')
 async def get_extract(id: int):
-    cliente = Cliente().find_by_id(id)
+    c = Cliente()
+    cliente = c.find_by_id(id)
     if not cliente:
+        logging.info(c.error)
         return JSONResponse(
             {'message': 'O usuario nao existe!'},
             status_code=status.HTTP_404_NOT_FOUND
@@ -57,9 +63,9 @@ async def get_extract(id: int):
 
     response = {
         'saldo': {
-            'total': int(cliente.saldo),
+            'total': cliente.saldo,
             'data_extrato': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-            'limite': int(cliente.limite),
+            'limite': cliente.limite,
         },
         'ultimas_transacoes': transacoes,
     }

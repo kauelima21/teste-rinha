@@ -1,19 +1,52 @@
-version: '3.8'
+version: '3.5'
 
 services:
-#  app1:
-#    build: .
-#    depends_on:
-#      - database
-#    command: uvicorn meu_app:app --host 0.0.0.0 --port 8001
-#    ports:
-#      - "8001:8001"
+  app1: &app
+    build: .
+    hostname: api1
+    environment:
+      - LOCAL_ENDPOINT=http://database:8000
+    volumes:
+      - socks:/tmp
+    depends_on:
+      - create_tables
+    networks:
+      - netapi
+
+  app2:
+    <<: *app
+    hostname: api2
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - socks:/tmp
+    networks:
+      - netapi
+    depends_on:
+      - app1
+      - app2
+    ports:
+      - "9999:9999"
+
   database:
     image: amazon/dynamodb-local
-    ports:
-      - "8000:8000"
-    volumes:
-      - db_data:/var/dynamodb_local
+    networks:
+      - netapi
+
+  create_tables:
+    build: ./app/database
+    environment:
+      - LOCAL_ENDPOINT=http://database:8000
+    depends_on:
+      - database
+    networks:
+      - netapi
+
+networks:
+  netapi:
+    driver: bridge
 
 volumes:
-  db_data:
+  socks:

@@ -1,15 +1,22 @@
+import logging
 import boto3
+import os
+from dotenv import load_dotenv
+
+
+logging.getLogger().setLevel(logging.INFO)
+load_dotenv()
 
 
 dynamodb = boto3.resource(
     'dynamodb',
     region_name='sa-east-1',
-    endpoint_url='http://localhost:8000'
+    endpoint_url=os.getenv('LOCAL_ENDPOINT', 'http:/localhost:8000')
 )
 client = boto3.client(
     'dynamodb',
     region_name='sa-east-1',
-    endpoint_url='http://localhost:8000'
+    endpoint_url=os.getenv('LOCAL_ENDPOINT', 'http:/localhost:8000')
 )
 
 __table_names__ = ['transacoes', 'clientes']
@@ -98,9 +105,12 @@ def populate_clients():
 
 
 if __name__ == '__main__':
+    logging.info('starting dump...')
     tables = client.list_tables()['TableNames']
     for name in __table_names__:
         if name not in tables:
+            logging.info('creating table...')
             create_table(name)
-    if 'clientes' in tables:
-        populate_clients()
+            if name == 'clientes':
+                logging.info('populating table...')
+                populate_clients()
