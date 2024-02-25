@@ -1,6 +1,7 @@
 import logging
 import boto3
 import os
+import time
 from dotenv import load_dotenv
 
 
@@ -11,12 +12,12 @@ load_dotenv()
 dynamodb = boto3.resource(
     'dynamodb',
     region_name='sa-east-1',
-    endpoint_url=os.getenv('LOCAL_ENDPOINT', 'http:/localhost:8000')
+    endpoint_url=os.getenv('LOCAL_ENDPOINT', 'http://localhost:8000')
 )
 client = boto3.client(
     'dynamodb',
     region_name='sa-east-1',
-    endpoint_url=os.getenv('LOCAL_ENDPOINT', 'http:/localhost:8000')
+    endpoint_url=os.getenv('LOCAL_ENDPOINT', 'http://localhost:8000')
 )
 
 __table_names__ = ['transacoes', 'clientes']
@@ -105,12 +106,16 @@ def populate_clients():
 
 
 if __name__ == '__main__':
-    logging.info('starting dump...')
-    tables = client.list_tables()['TableNames']
-    for name in __table_names__:
-        if name not in tables:
-            logging.info('creating table...')
-            create_table(name)
-            if name == 'clientes':
-                logging.info('populating table...')
-                populate_clients()
+    try:
+        logging.info('starting dump...')
+        time.sleep(10)
+        tables = client.list_tables()['TableNames']
+        for name in __table_names__:
+            if name not in tables:
+                logging.info('creating table...')
+                create_table(name)
+                if name == 'clientes':
+                    logging.info('populating table...')
+                    populate_clients()
+    except:
+        print('O banco ainda nao subiu, pode rodar dnv? :)')

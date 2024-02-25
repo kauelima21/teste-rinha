@@ -4,7 +4,7 @@ WORKDIR /fastapi
 
 COPY requirements.txt ./requirements.txt
 
-COPY app/database/config app/database/credentials /root/.aws/
+COPY database/config database/credentials /root/.aws/
 
 RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
